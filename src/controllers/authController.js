@@ -20,16 +20,14 @@ export const signin = async(req, res) => {
 
         const token = jwt.sign({user}, process.env.JWT_SECRET_KEY)
         res.cookie("token", token , {
-            httpOnly: true,
-            secure: false
-            ,
+            secure: false,
             sameSite: 'None'
         })
         if(!isMatch){
             res.status(400).send({msg: "invalid username password"});
             return;
         }
-        return res.status(201).send(user);
+        return res.status(201).send({token, user});
 
     } catch (err) {
         console.log('error while loggin in', err);
@@ -66,15 +64,11 @@ export const signup = async(req, res) => {
 
 export const verify = async (req, res) => {
   try {
-    const cookie = req.headers.cookie;
-    if (!cookie) {
+    const token = req.query.token;
+    if (!token) {
       return res.status(401).send({ msg: 'No token found' });
     }
 
-    const token = cookie
-      .split(';')
-      .find(c => c.trim().startsWith('token='))
-      ?.split('=')[1];
 
     if (!token) {
       return res.status(401).send({ msg: 'Token missing' });
