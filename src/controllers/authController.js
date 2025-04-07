@@ -21,9 +21,9 @@ export const signin = async(req, res) => {
         const token = jwt.sign({user}, process.env.JWT_SECRET_KEY)
         res.cookie("token", token , {
             httpOnly: true,
-            secure: true
+            secure: false
             ,
-            sameSite: 'Lax'
+            sameSite: 'None'
         })
         if(!isMatch){
             res.status(400).send({msg: "invalid username password"});
