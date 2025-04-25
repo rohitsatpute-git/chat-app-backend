@@ -34,25 +34,10 @@ const initSocket = (server) => {
     
         await User.findByIdAndUpdate(userId, { $set: { socketId: socket.id } })
     
-        socket.on('sendMessage', async(receiverId, receiverSocketId, message, image) => {
+        socket.on('sendMessage', async(receiverId, receiverSocketId, message, imageUrl) => {
             try{
-                console.log('first', receiverId, receiverSocketId, message)
-                console.log("message", message)
-                let imageUrl = ''
-                if(image) {
-                    const fileName = `${Date.now()}_${image.name}`;
-                    const params = {
-                        Bucket: 'mychat-app-images',
-                        Key: fileName,
-                        Body: Buffer.from(image.buffer, 'base64'),
-                        ContentType: 'image/jpeg'
-                    }
+                console.log("image url",imageUrl)
 
-                    const command = new PutObjectCommand(params);
-                    await s3.send(command);    
-                    imageUrl = `https://${params.Bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
-                    console.log('File uploaded successfully.');
-                }
                 if(receiverSocketId) {
                     socket.to(receiverSocketId).emit('receiveMessage', message, userId, imageUrl);
                 }

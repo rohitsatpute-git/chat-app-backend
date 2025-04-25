@@ -1,5 +1,17 @@
 import Message from "../models/message.js";
 import { ObjectId } from "mongodb";
+import dotenv from 'dotenv'
+import AWS from 'aws-sdk'
+
+dotenv.config();
+const s3 = new AWS.S3({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_ACCESS_SECRET_KEY
+    }
+});
+
 
 export const getAllMessages = async(req, res) => {
     try {
@@ -19,3 +31,50 @@ export const getAllMessages = async(req, res) => {
         res.status(500).send({err});
     }
 }
+
+export const getSignedUrlForDownload = async(req, res) => {
+    try {
+        const { filename } = req.body;
+        console.log("fileame", filename)
+        const params = {
+            Bucket: 'mychat-app-images',
+            Key: filename,
+            Expires: 20,
+        }
+
+        const singedUrl = s3.getSignedUrl('getObject', params);
+
+        console.log("signedurl", singedUrl);
+
+        res.status(200).send({url: singedUrl});
+
+    } catch (err){
+        console.log("error getting signed data", err);
+        res.status(500).send({err});
+    }
+}
+
+
+export const getSignedUrlForUpload = async(req, res) => {
+    try {
+        const { filename, fileType } = req.body;
+        console.log("fileame", filename, req.body)
+        const params = {
+            Bucket: 'mychat-app-images',
+            Key: filename,
+            Expires: 300,
+            ContentType: fileType
+        }
+
+        const singedUrl = s3.getSignedUrl('putObject', params);
+
+        console.log("signedurl", singedUrl);
+
+        res.status(200).send({url: singedUrl});
+
+    } catch (err){
+        console.log("error getting signed data", err);
+        res.status(500).send({err});
+    }
+}
+
